@@ -40,6 +40,7 @@ def generate_launch_description():
             "gbr_structure",
             "gbr_DYNSYS2025",
             "vard",
+            "selene_demo",
         ],
     )
 

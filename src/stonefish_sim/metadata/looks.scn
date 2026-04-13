@@ -11,6 +11,7 @@
             <look name="White" rgb="1.0 1.0 1.0" roughness="0.2"/>
             <look name="Brown" rgb="0.5 0.3 0.0" roughness="0.9" metalness="0.0" reflectivity="0.1"/>
             <look name="Black" rgb="0.0 0.0 0.0" roughness="1.0"/>
+            <look name="Blue" rgb="0.0 0.2 0.8" roughness="0.4"/>
             <look name="CarbonFiber" gray="1.0" roughness="0.2" reflectivity="0.8" texture="look_texture/carbon_fiber.png"/>
 
 
