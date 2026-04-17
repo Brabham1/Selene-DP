@@ -33,7 +33,7 @@ SSH:
 ```
 HTTPS:
 ```bash
-  git clone --recurse-submodules https://github.com/Joranikus/stonefish_simulator.git
+  git clone --recurse-submodules https://github.com/Brabham1/Selene-DP/edit/main/README.md
 ```
 
 ### Updating
