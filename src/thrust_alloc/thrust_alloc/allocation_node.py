@@ -1,23 +1,23 @@
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import String
+from std_msgs.msg import String, Float64MultiArray
 from geometry_msgs.msg import Wrench
+from sensor_msgs.msg import JointState
 
-from allocation import Allocation
+from thrust_alloc.thrust_allocation import ThrustAlloc
 import numpy as np
 
-class MinimalPublisher(Node):
+class Allocation_node(Node):
 
     def __init__(self):
         super().__init__('allocation_node')
-        self.publisher_ = self.create_publisher(String, 'topic', 10)
+        self.publisher_ = self.create_publisher(String, '/allocation/servos', 10)
 
         self.subscriber_ = self.create_subscription(Wrench, 'desired_wrench', self.qp, 10)
 
         self.iterations = 30
-        self.solver = Allocation()
-        
+        self.solver = ThrustAlloc()
 
     def qp(self, msg: Wrench):
         force_d = msg.force
@@ -28,15 +28,23 @@ class MinimalPublisher(Node):
 
         force, angle = self.solver.solve_thrust(self.iterations, tau)
 
+        #self.get_logger().info(f'Calc force: {force}, angle: {angle}')
 
+        """ angle_msg = JointState()
+        angle_msg.name = ["selene/Joint1", "selene/Joint2", "selene/Joint3", "selene/Joint4"]
+        angle_msg.position = [angle[0], angle[1], angle[2], angle[3]]
 
+        self.publisher_.publish(angle_msg)
 
+        force_msg = Float64MultiArray()
+        force_msg.data = [force[0], force[1], force[2], force[3]]
 
+        self.publisher_.publish(force_msg) """
 
 def main(args=None):
     rclpy.init(args=args)
 
-    allocation_node = MinimalPublisher()
+    allocation_node = Allocation_node()
 
     rclpy.spin(allocation_node)
 

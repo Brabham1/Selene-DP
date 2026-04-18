@@ -4,19 +4,19 @@ from numpy import sin, cos
 from scipy.linalg import block_diag
 from scipy import sparse
 
-class Allocation():
+class ThrustAlloc():
     def __init__(self):
         self.thrust_count = 4
         self.solver = osqp.OSQP()
 
-        self.tau = np.zeros(3)
+        self.tau = np.zeros((1,3))
 
-        self.f_0 = np.zeros(4)
+        self.f_0 = np.zeros((1,4))
         self.f = np.zeros(4)
         self.f_min = -40
         self.f_max = 51.52
 
-        self.a_0 = np.zeros(4)
+        self.a_0 = np.zeros((1,4))
         self.a = np.zeros(4)
         self.a_min = -np.pi
         self.a_max = np.pi
@@ -52,6 +52,7 @@ class Allocation():
                 self.a_0 = self.a_0 + diff_a_0
 
         if res and res.info.status == 'solved':
+            print(self.a_0)
             return self.f_0, self.a_0
         
     def solve(self):
