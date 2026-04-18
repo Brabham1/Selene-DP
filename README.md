@@ -29,7 +29,7 @@ The cloned repository **is** the ROS2 workspace. You do not need to create your 
 
 SSH:
 ```bash
-  git clone --recurse-submodules git@github.com:Joranikus/stonefish_simulator.git
+  git clone --recurse-submodules git@github.com:Brabham1/Selene-DP.git
 ```
 HTTPS:
 ```bash
