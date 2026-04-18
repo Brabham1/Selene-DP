@@ -20,7 +20,7 @@ class Allocation():
         self.a = np.zeros(4)
         self.a_min = -np.pi
         self.a_max = np.pi
-        self.da_max = 2
+        self.da_max = np.deg2rad(2)
 
         self.l_1 = 0.63
         self.l_2 = -0.63
@@ -40,6 +40,8 @@ class Allocation():
     def solve_thrust(self):
         P = self.P_pqo
 
+        self.a_0 = self.wrap_angles(self.a_0)
+
         A, l, u = self.calc_constraints(self.tau, self.f_0, self.a_0)
 
         q = np.hstack([2 * (self.f_0 @ self.P.toarray()), self.g(self.a_0), np.zeros(3)])
@@ -47,6 +49,13 @@ class Allocation():
         self.solver.setup(P, q, A, l, u, alpha=1.0)
         res = self.solver.solve()
         return res
+    
+    @staticmethod
+    def wrap_angles(angle_vec):
+        for i in range(len(angle_vec)):
+            angle_vec[i] = (angle_vec[i] + np.pi) % (2*np.pi) - np.pi
+
+        return angle_vec
 
     def calc_constraints(self, tau, f_0, a_0):
         T_sparse = sparse.csc_matrix(self.T(a_0))
@@ -124,25 +133,34 @@ class Allocation():
         return g_not_der
     
 
-# Create allocation instance
+""" # Create allocation instance
 alloc = Allocation()
 
 # Test input: desired forces/torques
-alloc.tau = np.array([50.0, 50.0, 0.0])  # Pure surge force (forward)
+alloc.tau = np.array([0, 0, 0.0])  # Pure surge force (forward)
 
 # Initial state (all thrusters at 0°, zero force)
 alloc.f_0 = np.array([0.0, 0.0, 0.0, 0.0])
 
-rad = np.deg2rad(30)
-alloc.a_0 = np.array([rad, rad, rad, rad])
+alloc.a_0 = np.array([0, 0, 0, 0])
 
 alloc.Q = 1.0 * sparse.eye(3, format='csc')
 alloc.omega = 1.0 * sparse.eye(4, format='csc')
-alloc.rho = 0.0
+alloc.rho = 0.0001
 
 # Solve
-res = alloc.solve_thrust()
+for i in range(30):
+    res = alloc.solve_thrust()
 
+    if res and res.info.status == 'solved':
+        x = res.x
+        diff_f_0 = x[:4]
+        diff_a_0 = x[4:8]
+
+        alloc.f_0 = alloc.f_0 + diff_f_0
+        alloc.a_0 = alloc.a_0 + diff_a_0
+
+        
 if res and res.info.status == 'solved':
     x = res.x
     delta_f = x[:4]
@@ -155,4 +173,4 @@ if res and res.info.status == 'solved':
     print(f"f = f_0 + Δf: {alloc.f_0 + delta_f}")
     print(f"a (deg): {np.rad2deg(alloc.a_0 + delta_a)}")
     print(f"Slack s: {s}")
-    print(f"Objective: {res.info.obj_val}")
+    print(f"Objective: {res.info.obj_val}") """
