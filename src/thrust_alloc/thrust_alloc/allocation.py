@@ -37,7 +37,24 @@ class Allocation():
         self.omega = sparse.eye(self.thrust_count, format='csc')
         self.P_pqo = 2 * sparse.block_diag([self.P, self.omega, self.Q], format='csc')
 
-    def solve_thrust(self):
+    def solve_thrust(self, iter, tau):
+        self.tau = tau
+
+        for i in range(iter):
+            res = self.solve()
+
+            if res and res.info.status == 'solved':
+                x = res.x
+                diff_f_0 = x[:4]
+                diff_a_0 = x[4:8]
+
+                self.f_0 = self.f_0 + diff_f_0
+                self.a_0 = self.a_0 + diff_a_0
+
+        if res and res.info.status == 'solved':
+            return self.f_0, self.a_0
+        
+    def solve(self):
         P = self.P_pqo
 
         self.a_0 = self.wrap_angles(self.a_0)

@@ -24,7 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'allocation = thrust_alloc.allocation:main'
+            'allocation = thrust_alloc.allocation_node:main'
         ],
     },
 )
