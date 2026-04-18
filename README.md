@@ -87,6 +87,10 @@ Needs to be run in git root:
 The simulator can be run either through prepared scripts or manually with custom parameters.
 
 ### Using Prepared Scripts
+Launch using Nvidia driver 
+```bash
+__NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia ros2 launch stonefish_sim simulation.launch.py scenario:=selene_demo
+```
 
 The simulator comes with several pre-configured scripts located in `src/stonefish_sim/scripts/`:
 
@@ -105,10 +109,6 @@ ros2 launch stonefish_sim simulation.launch.py scenario:=gbr_keyboard_demo
 Launch with custom resolution and rendering quality
 ```bash
 ros2 launch stonefish_sim simulation.launch.py scenario:=gbr_keyboard_demo window_res_x:=1920 window_res_y:=1080 rendering_quality:=low
-```
-Launch using nvidia driver 
-```bash
-__NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia ros2 launch stonefish_sim simulation.launch.py scenario:=selene_demo
 ```
 
 #### Available Scenarios
