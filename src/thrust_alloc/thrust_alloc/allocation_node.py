@@ -1,11 +1,24 @@
+import rclpy
+from rclpy.node import Node
+
+from std_msgs.msg import String
+from geometry_msgs.msg import Wrench
+
 import osqp
 import numpy as np
 from numpy import sin, cos
-from scipy.linalg import block_diag
-from scipy import sparse
 
-class Allocation():
+class MinimalPublisher(Node):
+
     def __init__(self):
+        super().__init__('minimal_publisher')
+        self.publisher_ = self.create_publisher(String, 'topic', 10)
+        timer_period = 0.5  # seconds
+        self.timer = self.create_timer(timer_period, self.timer_callback)
+        self.i = 0
+
+        self.subscriber_ = self.create_subscription(Wrench, 'desired_wrench', self.quadratic_programming, 10)
+
         self.thrust_count = 4
         self.solver = osqp.OSQP()
 
@@ -32,40 +45,39 @@ class Allocation():
         self.W_inv = np.eye(4)
         self.h = 1e-6 #Step for calculating gradient (derivative)
      
-        self.P = sparse.eye(self.thrust_count, format='csc')
-        self.Q = sparse.eye(3, format='csc')
-        self.omega = sparse.eye(self.thrust_count, format='csc')
-        self.P_pqo = 2 * sparse.block_diag([self.P, self.omega, self.Q], format='csc')
 
+
+        self.P = np.diag(self.thrust_count)
+        self.Q = np.diag(self.thrust_count)
+        self.omega = np.diag(self.thrust_count)
+        self.P_pqo = 2 * np.array([[self.P,0,0],
+                               [0,self.Q,0],
+                               [0,0,self.omega]])
+        
     def solve_thrust(self):
         P = self.P_pqo
 
         A, l, u = self.calc_constraints(self.tau, self.f_0, self.a_0)
 
-        q = np.hstack([2 * (self.f_0 @ self.P.toarray()), self.g(self.a_0), np.zeros(3)])
+        q = np.array([[2 * (self.f.transpose() @ self.P), self.q(self.a_0)]])
 
-        self.solver.setup(P, q, A, l, u, alpha=1.0)
-        res = self.solver.solve()
-        return res
+        self.solver.setup(P, q, A, l, u, alpha=1.0),
+
+
+        self.f = self.solver.solve()
 
     def calc_constraints(self, tau, f_0, a_0):
-        T_sparse = sparse.csc_matrix(self.T(a_0))
-        H_sparse = sparse.csc_matrix(self.H(a_0, f_0))
-        I_sparse = sparse.eye(3, format='csc')
-
-        aeq = sparse.hstack([T_sparse, H_sparse, I_sparse], format='csc')
-
-        I_box = sparse.eye(11, format='csc')
-        A = sparse.vstack([aeq, I_box], format='csc')
+        aeq = np.hstack([self.T(a_0), self.H(f_0,a_0), np.eye(3)])
+        A = np.vstack([aeq, np.eye(11)]) 
 
         beq = tau - (self.T(a_0) @ f_0)
 
-        box_l = np.hstack([self.f_min - f_0,
-                      np.maximum(self.a_min - a_0, -self.da_max),
+        box_l = np.hstack([self.f_min - self.f_0,
+                      np.maximum(self.a_min - self.a_0, -self.da_max),
                       -np.inf * np.ones(3)])  
         
-        box_u = np.hstack([self.f_max - f_0,
-                      np.minimum(self.a_max - a_0, self.da_max),
+        box_u = np.hstack([self.f_max - self.f_0,
+                      np.minimum(self.a_max - self.a_0, self.da_max),
                       np.inf * np.ones(3)])
         
         l = np.hstack([beq, box_l])
@@ -82,7 +94,7 @@ class Allocation():
         theta = self.theta
 
         T = np.array([[cos(a[0]),cos(a[1]),cos(a[2]),cos(a[3])],
-                      [sin(a[0]), sin(a[1]), sin(a[2]), sin(a[3])],
+                      [sin(a[0]), sin(a[1]), sin([2]), sin(a[3])],
                       [l_1 * sin(a[0] + theta), 
                        l_1 * sin(a[1] - theta), 
                        l_2 * sin(a[2] - theta), 
@@ -90,18 +102,18 @@ class Allocation():
 
         return T
 
-    def H(self, a_0, f_0):
+    def H(self, f_0, a_0):
         #TODO Fix the trig so it isnt so ass.
 
         theta = self.theta
         l_1 = self.l_1
         l_2 = self.l_2
 
-        J  = np.array([[-sin(a_0[0]), -sin(a_0[1]), -sin(a_0[2]), -sin(a_0[3])],
+        T_derivated = np.array([[-sin(a_0[0]), -sin(a_0[1]), -sin(a_0[2]), -sin(a_0[3])],
                       [cos(a_0[0]), cos(a_0[1]), cos(a_0[2]), cos(a_0[3])],
                       [l_1 * cos(a_0[0] + theta), l_1 * cos(a_0[1] -theta), l_2 * cos(a_0[2] -theta), l_2 * cos(a_0[3] + theta)]])
 
-        H = J * f_0
+        H = T_derivated @ f_0
         return H
 
     def g(self, a_0):
@@ -122,37 +134,36 @@ class Allocation():
 
         g_not_der = self.rho / (self.epsi + det)
         return g_not_der
-    
 
-# Create allocation instance
-alloc = Allocation()
 
-# Test input: desired forces/torques
-alloc.tau = np.array([50.0, 50.0, 0.0])  # Pure surge force (forward)
 
-# Initial state (all thrusters at 0°, zero force)
-alloc.f_0 = np.array([0.0, 0.0, 0.0, 0.0])
 
-rad = np.deg2rad(30)
-alloc.a_0 = np.array([rad, rad, rad, rad])
 
-alloc.Q = 1.0 * sparse.eye(3, format='csc')
-alloc.omega = 1.0 * sparse.eye(4, format='csc')
-alloc.rho = 0.0
+    def timer_callback(self):
+        msg = String()
+        msg.data = 'Hello World: %d' % self.i
+        self.publisher_.publish(msg)
+        self.get_logger().info('Publishing: "%s"' % msg.data)
+        self.i += 1
 
-# Solve
-res = alloc.solve_thrust()
+    def quadratic_programming(self):
+        pass
 
-if res and res.info.status == 'solved':
-    x = res.x
-    delta_f = x[:4]
-    delta_a = x[4:8]
-    s = x[8:11]
-    
-    print("\n=== Solution ===")
-    print(f"Δf: {delta_f}")
-    print(f"Δa (deg): {np.rad2deg(delta_a)}")
-    print(f"f = f_0 + Δf: {alloc.f_0 + delta_f}")
-    print(f"a (deg): {np.rad2deg(alloc.a_0 + delta_a)}")
-    print(f"Slack s: {s}")
-    print(f"Objective: {res.info.obj_val}")
+
+
+def main(args=None):
+    rclpy.init(args=args)
+
+    minimal_publisher = MinimalPublisher()
+
+    rclpy.spin(minimal_publisher)
+
+    # Destroy the node explicitly
+    # (optional - otherwise it will be done automatically
+    # when the garbage collector destroys the node object)
+    minimal_publisher.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
