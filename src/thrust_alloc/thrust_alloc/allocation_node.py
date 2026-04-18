@@ -12,7 +12,8 @@ class Allocation_node(Node):
 
     def __init__(self):
         super().__init__('allocation_node')
-        self.publisher_ = self.create_publisher(String, '/allocation/servos', 10)
+        self.pub_angle = self.create_publisher(JointState, '/selene/servos', 10)
+        self.pub_force = self.create_publisher(Float64MultiArray, '/selene/thrusters', 10)
 
         self.subscriber_ = self.create_subscription(Wrench, 'desired_wrench', self.qp, 10)
 
@@ -30,16 +31,17 @@ class Allocation_node(Node):
 
         self.get_logger().info(f'Calc force: {force}, angle: {np.rad2deg(angle)}')
 
-        """ angle_msg = JointState()
+        angle_msg = JointState()
+        angle_msg.header.stamp = self.get_clock().now().to_msg()
         angle_msg.name = ["selene/Joint1", "selene/Joint2", "selene/Joint3", "selene/Joint4"]
         angle_msg.position = [angle[0], angle[1], angle[2], angle[3]]
 
-        self.publisher_.publish(angle_msg)
+        self.pub_angle.publish(angle_msg)
 
         force_msg = Float64MultiArray()
         force_msg.data = [force[0], force[1], force[2], force[3]]
 
-        self.publisher_.publish(force_msg) """
+        self.pub_force.publish(force_msg)
 
 def main(args=None):
     rclpy.init(args=args)
