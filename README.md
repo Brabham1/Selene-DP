@@ -33,7 +33,7 @@ SSH:
 ```
 HTTPS:
 ```bash
-  git clone --recurse-submodules https://github.com/Brabham1/Selene-DP/edit/main/README.md
+  git clone --recurse-submodules https://github.com/Brabham1/Selene-DP.git
 ```
 
 ### Updating
@@ -51,7 +51,7 @@ HTTPS:
 ### Building Stonefish Library
 
 ```bash
-  cd stonefish_simulator/include/stonefish
+  cd Selene-DP/include/stonefish
 ```
 ```bash
   mkdir build && cd build
@@ -81,19 +81,16 @@ Needs to be run in git root:
   source install/setup.bash
 ```
 
-### Running DEMO Script to Test
-
-Needs to be run in git root:
-```bash
-  bash src/stonefish_sim/scripts/gbr_keyboard_demo.sh
-```
-
 ## Running the Simulator
 ![runningsimulator](./images/Running_Simulator.png)
 
 The simulator can be run either through prepared scripts or manually with custom parameters.
 
 ### Using Prepared Scripts
+Launch using Nvidia driver 
+```bash
+__NV_PRIME_RENDER_OFFLOAD=1 __GLX_VENDOR_LIBRARY_NAME=nvidia ros2 launch stonefish_sim simulation.launch.py scenario:=selene_demo
+```
 
 The simulator comes with several pre-configured scripts located in `src/stonefish_sim/scripts/`:
 
