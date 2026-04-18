@@ -24,11 +24,11 @@ class Allocation_node(Node):
         torque_d = msg.torque
         self.get_logger().info(f'Got Force: {force_d} and Torque: {torque_d}')
 
-        tau = np.array([[force_d.x, force_d.y, torque_d.z]])
+        tau = np.array([force_d.x, force_d.y, torque_d.z])
 
         force, angle = self.solver.solve_thrust(self.iterations, tau)
 
-        #self.get_logger().info(f'Calc force: {force}, angle: {angle}')
+        self.get_logger().info(f'Calc force: {force}, angle: {np.rad2deg(angle)}')
 
         """ angle_msg = JointState()
         angle_msg.name = ["selene/Joint1", "selene/Joint2", "selene/Joint3", "selene/Joint4"]
