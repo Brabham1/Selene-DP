@@ -81,13 +81,6 @@ Needs to be run in git root:
   source install/setup.bash
 ```
 
-### Running DEMO Script to Test
-
-Needs to be run in git root:
-```bash
-  bash src/stonefish_sim/scripts/gbr_keyboard_demo.sh
-```
-
 ## Running the Simulator
 ![runningsimulator](./images/Running_Simulator.png)
 
