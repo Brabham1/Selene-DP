@@ -33,7 +33,7 @@ SSH:
 ```
 HTTPS:
 ```bash
-  git clone --recurse-submodules https://github.com/Brabham1/Selene-DP/edit/main/README.md
+  git clone --recurse-submodules https://github.com/Brabham1/Selene-DP.git
 ```
 
 ### Updating
@@ -51,7 +51,7 @@ HTTPS:
 ### Building Stonefish Library
 
 ```bash
-  cd stonefish_simulator/include/stonefish
+  cd Selene-DP/include/stonefish
 ```
 ```bash
   mkdir build && cd build
