@@ -9,14 +9,14 @@ class ThrustAlloc():
         self.thrust_count = 4
         self.solver = osqp.OSQP()
 
-        self.tau = np.zeros((1,3))
+        self.tau = np.array([0,0,0])
 
-        self.f_0 = np.zeros((1,4))
+        self.f_0 = np.array([0,0,0,0])
         self.f = np.zeros(4)
         self.f_min = -40
         self.f_max = 51.52
 
-        self.a_0 = np.zeros((1,4))
+        self.a_0 = np.array([0,0,0,0])
         self.a = np.zeros(4)
         self.a_min = -np.pi
         self.a_max = np.pi
@@ -27,7 +27,7 @@ class ThrustAlloc():
         self.theta = np.deg2rad(41.1)
 
         # For calculating g
-        self.rho = 1000.0
+        self.rho = 0.000001
         self.epsi = 1e-06
         self.W_inv = np.eye(4)
         self.h = 1e-6 #Step for calculating gradient (derivative)
@@ -52,7 +52,6 @@ class ThrustAlloc():
                 self.a_0 = self.a_0 + diff_a_0
 
         if res and res.info.status == 'solved':
-            print(self.a_0)
             return self.f_0, self.a_0
         
     def solve(self):
@@ -64,7 +63,7 @@ class ThrustAlloc():
 
         q = np.hstack([2 * (self.f_0 @ self.P.toarray()), self.g(self.a_0), np.zeros(3)])
 
-        self.solver.setup(P, q, A, l, u, alpha=1.0)
+        self.solver.setup(P, q, A, l, u, alpha=1.0, verbose= False)
         res = self.solver.solve()
         return res
     
@@ -152,10 +151,10 @@ class ThrustAlloc():
     
 
 """ # Create allocation instance
-alloc = Allocation()
+alloc = ThrustAlloc()
 
 # Test input: desired forces/torques
-alloc.tau = np.array([0, 0, 0.0])  # Pure surge force (forward)
+alloc.tau = np.array([10, 10, 0.0])  # Pure surge force (forward)
 
 # Initial state (all thrusters at 0°, zero force)
 alloc.f_0 = np.array([0.0, 0.0, 0.0, 0.0])
@@ -164,11 +163,11 @@ alloc.a_0 = np.array([0, 0, 0, 0])
 
 alloc.Q = 1.0 * sparse.eye(3, format='csc')
 alloc.omega = 1.0 * sparse.eye(4, format='csc')
-alloc.rho = 0.0001
+alloc.rho = 0.000001
 
 # Solve
 for i in range(30):
-    res = alloc.solve_thrust()
+    res = alloc.solve()
 
     if res and res.info.status == 'solved':
         x = res.x
