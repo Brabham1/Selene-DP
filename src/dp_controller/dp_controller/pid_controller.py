@@ -27,3 +27,8 @@ class Pid:
         self.prev_e = e
         self.prev_d_f = d_f
         return u
+    
+    def setParams(self, params):
+        self.kp = params[0]
+        self.ki = params[1]
+        self.kd = params[2]

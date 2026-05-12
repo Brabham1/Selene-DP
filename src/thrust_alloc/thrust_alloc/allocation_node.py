@@ -34,12 +34,12 @@ class Allocation_node(Node):
         angle_msg = JointState()
         angle_msg.header.stamp = self.get_clock().now().to_msg()
         angle_msg.name = ["selene/Joint1", "selene/Joint2", "selene/Joint3", "selene/Joint4"]
-        angle_msg.position = [angle[0], angle[1], angle[2], angle[3]]
+        angle_msg.position = [angle[0], -angle[1], -angle[2], angle[3]]
 
         self.pub_angle.publish(angle_msg)
 
         force_msg = Float64MultiArray()
-        force_msg.data = [force[0], force[1], force[2], force[3]]
+        force_msg.data = [-force[0], -force[1], -force[2], -force[3]]
 
         self.pub_force.publish(force_msg)
 

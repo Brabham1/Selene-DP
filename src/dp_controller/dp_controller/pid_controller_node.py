@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from rcl_interfaces.msg import SetParametersResult
 from message_filters import Subscriber, ApproximateTimeSynchronizer
 
 from std_msgs.msg import Bool
@@ -43,19 +44,26 @@ class pid_controller(Node):
 
         self.current_pos = np.full(3, None)
         self.desired_pos = np.full(3, None)
+        
+        self.declare_parameter("pid_x", [1.0, 0.0, 0.0])
+        self.declare_parameter("pid_y", [1.0, 0.0, 0.0])
+        self.declare_parameter("pid_torque", [1.0, 0.0, 0.0])
+        self.add_on_set_parameters_callback(self.parameter_callback)
 
-        self.pid_params = np.array([[1,0,0],
-                                    [1,0,0],
-                                    [1,0,0]])
+        self.pid_x_param = self.get_parameter("pid_x").value
+        self.pid_y_param = self.get_parameter("pid_y").value
+        self.pid_torque_param = self.get_parameter("pid_torque").value
+        
+        self.pid_force_x = Pid(self.pid_x_param)
+        self.pid_force_y = Pid(self.pid_y_param)
+        self.pid_torque_z = Pid(self.pid_torque_param)
         self.time = 0.0
         self.prev_time = None
-        self.pid_force_x = Pid(self.pid_params[0])
-        self.pid_force_y = Pid(self.pid_params[1])
-        self.pid_torque_z = Pid(self.pid_params[2])
         
 
     def enable_callback(self, msg: Bool):
         self.enable = msg.data
+        self.get_logger().info(f"Station keeping set to: {msg.data}")
         
 
     def pos_callback(self, msg_gps: NavSatFix, msg_imu: Imu):
@@ -95,7 +103,7 @@ class pid_controller(Node):
 
         self.current_pos[2] = yaw
 
-        self.get_logger().info(f"Got position N: {n}, E: {e}, Yaw: {yaw}")
+        self.get_logger().debug(f"Got position N: {self.current_pos[0]}, E: {self.current_pos[1]}, Yaw: {self.current_pos[2]}")
         self.pid_calc()
 
     def pid_calc(self):
@@ -112,7 +120,7 @@ class pid_controller(Node):
         
         dt = self.time - self.prev_time
         error = self.desired_pos - self.current_pos
-        error[2]= np.arctan2(np.sin(error[2]), np.cos(error[2]))
+        error[2]= np.arctan2(np.sin(error[2]), np.cos(error[2])) #Angle wrapping
 
         desired_force_x = self.pid_force_x.calc(error[0], dt)
         desired_force_y = self.pid_force_y.calc(error[1], dt)
@@ -123,9 +131,35 @@ class pid_controller(Node):
         msg.force.y = desired_force_y
         msg.torque.z = desired_torque_z
         self.pub_wrench.publish(msg)
-        self.get_logger().info(f"Publishing F_x: {desired_force_x}, F_y: {desired_force_x}, T_z: {desired_torque_z}")
+        self.get_logger().info(f" | Publishing F_x: {desired_force_x}, F_y: {desired_force_x}, T_z: {desired_torque_z} | Err_x: {error[0]}, Err_y: {error[1]}, Err_yaw: {error[2]}")
 
         self.prev_time = self.time
+
+    def parameter_callback(self, params):
+        """Callback to handle parameter updates."""
+        for param in params:
+            if param.name == 'pid_x':
+                if len(param.value) == 3:
+                    self.pid_force_x.setParams(param.value)
+                    self.get_logger().info(f' {param.name}| reference was set: {param.value}')
+
+                    return SetParametersResult(successful = True)
+                return SetParametersResult(successful = False)
+            
+            if param.name == 'pid_y':
+                if len(param.value) == 3:
+                    self.pid_force_y.setParams(param.value)
+                    self.get_logger().info(f' {param.name}| reference was set: {param.value}')
+                    return SetParametersResult(successful = True)
+                return SetParametersResult(successful = False)
+            
+            if param.name == 'pid_torque':
+                if len(param.value) == 3:
+                    self.pid_torque_z.setParams(param.value)
+                    self.get_logger().info(f' {param.name}| reference was set: {param.value}')
+
+                    return SetParametersResult(successful = True)
+                return SetParametersResult(successful = False)
         
 def main(args=None):
     rclpy.init(args=args)

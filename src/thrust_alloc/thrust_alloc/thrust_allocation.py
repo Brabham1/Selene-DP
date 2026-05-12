@@ -22,8 +22,8 @@ class ThrustAlloc():
         self.a_max = np.pi
         self.da_max = np.deg2rad(2)
 
-        self.l_1 = 0.63
-        self.l_2 = -0.63
+        self.l_x = np.array([0.475, 0.475, -0.475, -0.475])
+        self.l_y = np.array([-0.575/2, 0.575/2, -0.575/2, 0.575/2])
         self.theta = np.deg2rad(41.1)
 
         # For calculating g
@@ -103,16 +103,16 @@ class ThrustAlloc():
     def T(self, a):
         #TODO Fix the trig so it isnt so ass.
 
-        l_1 = self.l_1
-        l_2 = self.l_2
+        l_x = self.l_x
+        l_y = self.l_y
         theta = self.theta
 
         T = np.array([[cos(a[0]),cos(a[1]),cos(a[2]),cos(a[3])],
                       [sin(a[0]), sin(a[1]), sin(a[2]), sin(a[3])],
-                      [l_1 * sin(a[0] + theta), 
-                       l_1 * sin(a[1] - theta), 
-                       l_2 * sin(a[2] - theta), 
-                       l_2 * sin(a[3] + theta)]])
+                      [l_x[0] * sin(a[0]) - l_y[0] * cos(a[0]), 
+                       l_x[1] * sin(a[1]) - l_y[1] * cos(a[1]), 
+                       l_x[2] * sin(a[2]) - l_y[2] * cos(a[2]), 
+                       l_x[3] * sin(a[3]) - l_y[3] * cos(a[3])]])
 
         return T
 
@@ -120,12 +120,17 @@ class ThrustAlloc():
         #TODO Fix the trig so it isnt so ass.
 
         theta = self.theta
-        l_1 = self.l_1
-        l_2 = self.l_2
+        l_x = self.l_x
+        l_y = self.l_y
 
-        J  = np.array([[-sin(a_0[0]), -sin(a_0[1]), -sin(a_0[2]), -sin(a_0[3])],
-                      [cos(a_0[0]), cos(a_0[1]), cos(a_0[2]), cos(a_0[3])],
-                      [l_1 * cos(a_0[0] + theta), l_1 * cos(a_0[1] -theta), l_2 * cos(a_0[2] -theta), l_2 * cos(a_0[3] + theta)]])
+        J = np.array([
+            [-np.sin(a_0[0]), -np.sin(a_0[1]), -np.sin(a_0[2]), -np.sin(a_0[3])],
+            [ np.cos(a_0[0]),  np.cos(a_0[1]),  np.cos(a_0[2]),  np.cos(a_0[3])],
+            [ l_x[0]*np.cos(a_0[0]) + l_y[0]*np.sin(a_0[0]),
+              l_x[1]*np.cos(a_0[1]) + l_y[1]*np.sin(a_0[1]),
+              l_x[2]*np.cos(a_0[2]) + l_y[2]*np.sin(a_0[2]),
+              l_x[3]*np.cos(a_0[3]) + l_y[3]*np.sin(a_0[3])]
+        ])
 
         H = J * f_0
         return H
