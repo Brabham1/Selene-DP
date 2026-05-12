@@ -15,7 +15,7 @@ class Allocation_node(Node):
         self.pub_angle = self.create_publisher(JointState, '/selene/servos', 10)
         self.pub_force = self.create_publisher(Float64MultiArray, '/selene/thrusters', 10)
 
-        self.subscriber_ = self.create_subscription(Wrench, 'desired_wrench', self.qp, 10)
+        self.subscriber_ = self.create_subscription(Wrench, '/dp_control/desired_wrench', self.qp, 10)
 
         self.iterations = 30
         self.solver = ThrustAlloc()

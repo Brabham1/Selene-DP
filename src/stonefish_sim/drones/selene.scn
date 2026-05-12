@@ -334,16 +334,16 @@
             <ros_publisher topic="/selene/imu"/>
         </sensor>
 
-        <sensor name="gps" rate="10" type="gps">
-            <noise ned_position="0.00005"/>
+        <sensor name="gps" rate="1000" type="gps">
+            <noise ned_position="0.0000"/>
             <history samples="10"/>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <origin xyz="0.0 0.0 -0.5" rpy="0.0 0.0 0.0"/>
             <link name="Base"/>
             <ros_publisher topic="/selene/gps"/>
         </sensor>
 
-        <sensor name="odom" rate="100.0" type="odometry">
-            <noise position="0.000001" velocity="0.0000001" angle="0.0000001" angular_velocity="0.000005"/>
+        <sensor name="odom" rate="1000.0" type="odometry">
+            <noise position="0.00000" velocity="0.000000" angle="0.000000" angular_velocity="0.00000"/>
             <history samples="10"/>
             <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
             <link name="Base"/>
