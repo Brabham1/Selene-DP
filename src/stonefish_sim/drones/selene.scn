@@ -193,8 +193,8 @@
             </propeller>
             <rotor_dynamics type="zero_order"/>
             <thrust_model type="linear_interpolation">
-                <input value="-60.0 -20.0 0.0 20.0 60.0"/>
-                <output value="-60.0 -20.0 0.0 20.0 60.0"/>
+                <input value="-39.0 -20.0 0.0 20.0 51.0"/>
+                <output value="-39.0 -20.0 0.0 20.0 51.0"/>
             </thrust_model>
         </actuator>
 
@@ -235,8 +235,8 @@
             </propeller>
             <rotor_dynamics type="zero_order"/>
             <thrust_model type="linear_interpolation">
-                <input value="-60.0 -20.0 0.0 20.0 60.0"/>
-                <output value="-60.0 -20.0 0.0 20.0 60.0"/>
+                <input value="-39.0 -20.0 0.0 20.0 51.0"/>
+                <output value="-39.0 -20.0 0.0 20.0 51.0"/>
             </thrust_model>
         </actuator>
 
@@ -277,8 +277,8 @@
             </propeller>
             <rotor_dynamics type="zero_order"/>
             <thrust_model type="linear_interpolation">
-                <input value="-60.0 -20.0 0.0 20.0 60.0"/>
-                <output value="-60.0 -20.0 0.0 20.0 60.0"/>
+                <input value="-39.0 -20.0 0.0 20.0 51.0"/>
+                <output value="-39.0 -20.0 0.0 20.0 51.0"/>
             </thrust_model>
         </actuator>
 
@@ -319,8 +319,8 @@
             </propeller>
             <rotor_dynamics type="zero_order"/>
             <thrust_model type="linear_interpolation">
-                <input value="-60.0 -20.0 0.0 20.0 60.0"/>
-                <output value="-60.0 -20.0 0.0 20.0 60.0"/>
+                <input value="-39.0 -20.0 0.0 20.0 51.0"/>
+                <output value="-39.0 -20.0 0.0 20.0 51.0"/>
             </thrust_model>
         </actuator>
 
